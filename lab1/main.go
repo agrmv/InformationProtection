@@ -1,11 +1,12 @@
 package main
 
 import (
+	"./DiffieHellman"
 	"./Euklid"
+	"./babyGiantStep"
 	"./modularPow"
 	"fmt"
 )
-import "./DiffieHellman"
 
 func main() {
 	fmt.Println("\n***modularPow***")
@@ -16,4 +17,7 @@ func main() {
 
 	fmt.Println("\n\n***Diffie-Hellman***")
 	DiffieHellman.MainForDiffieHellman()
+
+	fmt.Println("\n\n***BabyGiant***")
+	babyGiantStep.MainForBabyGiantStep()
 }

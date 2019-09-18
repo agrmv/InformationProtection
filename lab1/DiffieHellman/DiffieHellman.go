@@ -70,7 +70,7 @@ func FindCommonKey(PublicKey int64, PrivateKey int64, P int64) int64 {
 }
 
 func MainForDiffieHellman() {
-	P, Q, g := GeneratePQg(20)
+	P, Q, g := GeneratePQg(10000)
 	fmt.Printf("P = %d, Q = %d, g = %d\n", P, Q, g)
 
 	var A, B Person
