@@ -1,4 +1,4 @@
-package Euklid
+package Euclid
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ func gcd(a int64, b int64, x *int64, y *int64) int64 {
 	return d
 }
 
-func MainForEuklid() {
+func MainForEuclid() {
 	var a, b, x, y int64
 	fmt.Println("Input a, x, p")
 	if _, err := fmt.Scan(&a, &b); err != nil {

@@ -2,7 +2,7 @@ package main
 
 import (
 	"./DiffieHellman"
-	"./Euklid"
+	"./Euclid"
 	"./babyGiantStep"
 	"./modularPow"
 	"fmt"
@@ -13,7 +13,7 @@ func main() {
 	modularPow.MainForModularPow()
 
 	fmt.Println("\n\n***Euklid***")
-	Euklid.MainForEuklid()
+	Euclid.MainForEuclid()
 
 	fmt.Println("\n\n***Diffie-Hellman***")
 	DiffieHellman.MainForDiffieHellman()
