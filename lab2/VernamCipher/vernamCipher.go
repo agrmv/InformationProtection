@@ -2,15 +2,27 @@ package main
 
 import "fmt"
 
-//хз как назвать
-//проверяет на то принадлежит ли символ алфивиту удаляет пробелы и прочее и делает из всех юукв заглавные
-func CheckClear(in *string) {
+func isBigAlphabeticalLetter(letter int32) bool {
+	if 65 <= letter && letter <= 90 {
+		return true
+	}
+	return false
+}
+
+func isSmallAlphabeticalLetter(letter int32) bool {
+	if 97 <= letter && letter <= 122 {
+		return true
+	}
+	return false
+}
+
+func CheckAlphabetical(in *string) {
 	var out []rune
-	for _, v := range *in {
-		if 65 <= v && v <= 90 {
-			out = append(out, v)
-		} else if 97 <= v && v <= 122 {
-			out = append(out, v-32)
+	for _, letter := range *in {
+		if isBigAlphabeticalLetter(letter) {
+			out = append(out, letter)
+		} else if isSmallAlphabeticalLetter(letter) {
+			out = append(out, letter-32)
 		}
 	}
 	*in = string(out)
@@ -25,8 +37,8 @@ func DecodePair(a, b rune) rune {
 }
 
 func Encode(msg, key string) string {
-	CheckClear(&msg)
-	CheckClear(&key)
+	CheckAlphabetical(&msg)
+	CheckAlphabetical(&key)
 	out := make([]rune, 0, len(msg))
 	for i, v := range msg {
 		out = append(out, EncodePair(v, rune(key[i%len(key)])))
@@ -35,8 +47,8 @@ func Encode(msg, key string) string {
 }
 
 func Decode(msg, key string) string {
-	CheckClear(&msg)
-	CheckClear(&key)
+	CheckAlphabetical(&msg)
+	CheckAlphabetical(&key)
 	out := make([]rune, 0, len(msg))
 	for i, v := range msg {
 		out = append(out, DecodePair(v, rune(key[i%len(key)])))
