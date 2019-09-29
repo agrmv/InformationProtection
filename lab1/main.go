@@ -4,13 +4,12 @@ import (
 	"./DiffieHellman"
 	"./Euclid"
 	"./babyGiantStep"
-	"./modularPow"
 	"fmt"
 )
 
 func main() {
-	fmt.Println("\n***modularPow***")
-	modularPow.MainForModularPow()
+	/*fmt.Println("\n***modularPow***")
+	modularPow.MainForModularPow()*/
 
 	fmt.Println("\n\n***Euklid***")
 	Euclid.MainForEuclid()

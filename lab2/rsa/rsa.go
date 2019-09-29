@@ -15,7 +15,6 @@ type Keys struct {
 	privateKey Pair
 }
 
-//https://gist.github.com/andreigasparovici/12b460c1cc53586ed0064edbe9f71e87
 //https://ru.wikipedia.org/wiki/%D0%A2%D0%B5%D1%81%D1%82_%D0%9C%D0%B8%D0%BB%D0%BB%D0%B5%D1%80%D0%B0_%E2%80%94_%D0%A0%D0%B0%D0%B1%D0%B8%D0%BD%D0%B0
 func rabinMiller(n int64) uint8 {
 	var ok uint8
@@ -41,14 +40,14 @@ func generatePrimaryKey() int64 {
 
 func generatePublicKey(n int64) int64 {
 	generated := int64(rand.Int())
-	for Euclid.GcdSimple(n, generated) == 0 {
+	for gcd, _, _ := Euclid.Gcd(n, generated); gcd != 1; {
 		generated = int64(rand.Int())
 	}
 	return generated
 }
 
 func modularInverse(n int64, mod int64) int64 {
-	inverse, _ := Euclid.GcdPair(n, mod)
+	_, inverse, _ := Euclid.Gcd(n, mod)
 	for inverse > 0 {
 		inverse += mod
 	}
