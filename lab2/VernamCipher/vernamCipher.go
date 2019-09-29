@@ -16,7 +16,7 @@ func isSmallAlphabeticalLetter(letter int32) bool {
 	return false
 }
 
-func CheckAlphabetical(in *string) {
+func checkAlphabetical(in *string) {
 	var out []rune
 	for _, letter := range *in {
 		if isBigAlphabeticalLetter(letter) {
@@ -28,30 +28,30 @@ func CheckAlphabetical(in *string) {
 	*in = string(out)
 }
 
-func EncodePair(a, b rune) rune {
+func encodePair(a, b rune) rune {
 	return (((a - 'A') + (b - 'A')) % 26) + 'A'
 }
 
-func DecodePair(a, b rune) rune {
+func decodePair(a, b rune) rune {
 	return ((((a - 'A') - (b - 'A')) + 26) % 26) + 'A'
 }
 
 func Encode(msg, key string) string {
-	CheckAlphabetical(&msg)
-	CheckAlphabetical(&key)
+	checkAlphabetical(&msg)
+	checkAlphabetical(&key)
 	out := make([]rune, 0, len(msg))
 	for i, v := range msg {
-		out = append(out, EncodePair(v, rune(key[i%len(key)])))
+		out = append(out, encodePair(v, rune(key[i%len(key)])))
 	}
 	return string(out)
 }
 
 func Decode(msg, key string) string {
-	CheckAlphabetical(&msg)
-	CheckAlphabetical(&key)
+	checkAlphabetical(&msg)
+	checkAlphabetical(&key)
 	out := make([]rune, 0, len(msg))
 	for i, v := range msg {
-		out = append(out, DecodePair(v, rune(key[i%len(key)])))
+		out = append(out, decodePair(v, rune(key[i%len(key)])))
 	}
 	return string(out)
 }
