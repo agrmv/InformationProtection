@@ -6,6 +6,7 @@ import (
 	"../../lab1/modularPow"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 type Pair struct {
@@ -32,58 +33,50 @@ func rabinMiller(n int64) uint8 {
 
 func generatePrimaryKey() int64 {
 	generated := rand.Int63() % 1000
-	for rabinMiller(generated) == 0 {
-		generated = rand.Int63()
+	for ; rabinMiller(generated) == 0; rabinMiller(generated) {
+		generated = rand.Int63() % 1000
 	}
 	return generated
 }
 
 func generatePublicKey(n int64) int64 {
 	generated := rand.Int63() % 1000
-	for gcd, _, _ := euclid.Gcd(n, generated); gcd != 1; {
+	for gcd, _, _ := euclid.Gcd(n, generated); gcd != 1; gcd, _, _ = euclid.Gcd(n, generated) {
 		generated = rand.Int63() % 1000
 	}
 	return generated
 }
 
-func GCDRecursive(p, q int64) int64 {
-	if q == 0 {
-		return p
-	}
-
-	r := p % q
-	return GCDRecursive(q, r)
-}
-
 func modularInverse(n int64, mod int64) int64 {
 	_, _, inverse := euclid.Gcd(n, mod)
-	fmt.Println(inverse)
-
 	for inverse < 0 {
 		inverse += mod
 	}
 	return inverse
 }
 
-//e открытый ключ
-//d закрытый ключ
 //https://ru.wikipedia.org/wiki/RSA
 func generateKeys() Keys {
 	var result Keys
 	var p, q int64
 
 	p = generatePrimaryKey()
+	fmt.Println("CHECKOUT1")
 	q = generatePrimaryKey()
+	fmt.Println("CHECKOUT2")
 
 	n := p * q
 	// вычисление функции эйлера
 	phi := (p - 1) * (q - 1)
 	e := generatePublicKey(phi)
+	fmt.Println("CHECKOUT3")
 
 	result.publicKey = Pair{n, e}
 
 	//вычисление секретной экспаненты
 	d := modularInverse(e, phi)
+	fmt.Println("CHECKOUT4")
+
 	result.privateKey = Pair{n, d}
 	return result
 }
@@ -97,8 +90,8 @@ func Decrypt(key Keys, value int64) int64 {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	keys := generateKeys()
 	fmt.Printf("Public key: %d, %d\n", keys.publicKey.first, keys.publicKey.second)
 	fmt.Printf("Private key: %d, %d\n", keys.privateKey.first, keys.privateKey.second)
-
 }
