@@ -22,10 +22,13 @@ type Keys struct {
 func rabinMiller(n int64) uint8 {
 	var ok uint8 = 1
 	for i := 1; i <= 5 && ok == 1; i++ {
+		//случайное целое число a в отрезке [2, n − 2]
 		var a = rand.Int63n(n-2) + 2
 		var result = modularPow.ModularPow(a, n-1, n)
 		if result == 1 || result == n-1 {
 			ok &= 1
+		} else {
+			ok &= 0
 		}
 	}
 	return ok
@@ -61,21 +64,17 @@ func generateKeys() Keys {
 	var p, q int64
 
 	p = generatePrimaryKey()
-	fmt.Println("CHECKOUT1")
 	q = generatePrimaryKey()
-	fmt.Println("CHECKOUT2")
 
 	n := p * q
 	// вычисление функции эйлера
 	phi := (p - 1) * (q - 1)
 	e := generatePublicKey(phi)
-	fmt.Println("CHECKOUT3")
 
 	result.publicKey = Pair{n, e}
 
 	//вычисление секретной экспаненты
 	d := modularInverse(e, phi)
-	fmt.Println("CHECKOUT4")
 
 	result.privateKey = Pair{n, d}
 	return result
