@@ -54,6 +54,9 @@ func modularInverse(n int64, mod int64) int64 {
 	return inverse
 }
 
+//e открытый ключ
+//d закрытый ключ
+//https://ru.wikipedia.org/wiki/RSA
 func generateKeys() Keys {
 	var result Keys
 	var p, q int64
@@ -61,11 +64,13 @@ func generateKeys() Keys {
 	q = generatePrimaryKey()
 
 	n := p * q
+	// вычисление функции эйлера
 	phi := (p - 1) * (q - 1)
 	e := generatePublicKey(phi)
 
 	result.publicKey = Pair{n, e}
 
+	//вычисление секретной экспаненты
 	d := modularInverse(e, phi)
 	result.privateKey = Pair{n, d}
 	return result
@@ -81,5 +86,4 @@ func Decrypt(key Keys, value int64) int64 {
 
 func main() {
 	//TODO!!!!!!!
-	//https://gist.github.com/andreigasparovici/12b460c1cc53586ed0064edbe9f71e87
 }
