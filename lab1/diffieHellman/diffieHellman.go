@@ -1,4 +1,4 @@
-package DiffieHellman
+package diffieHellman
 
 import (
 	"crypto/rand"

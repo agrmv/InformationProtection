@@ -1,4 +1,4 @@
-package Euclid
+package euclid
 
 import (
 	"fmt"

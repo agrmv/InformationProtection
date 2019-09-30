@@ -1,7 +1,7 @@
 package rsa
 
 import (
-	"../../lab1/Euclid"
+	"../../lab1/euclid"
 	"../../lab1/modularPow"
 	"math/rand"
 )
@@ -40,14 +40,14 @@ func generatePrimaryKey() int64 {
 
 func generatePublicKey(n int64) int64 {
 	generated := int64(rand.Int())
-	for gcd, _, _ := Euclid.Gcd(n, generated); gcd != 1; {
+	for gcd, _, _ := euclid.Gcd(n, generated); gcd != 1; {
 		generated = int64(rand.Int())
 	}
 	return generated
 }
 
 func modularInverse(n int64, mod int64) int64 {
-	_, inverse, _ := Euclid.Gcd(n, mod)
+	_, inverse, _ := euclid.Gcd(n, mod)
 	for inverse > 0 {
 		inverse += mod
 	}
@@ -81,4 +81,5 @@ func Decrypt(key Keys, value int64) int64 {
 
 func main() {
 	//TODO!!!!!!!
+	//https://gist.github.com/andreigasparovici/12b460c1cc53586ed0064edbe9f71e87
 }
