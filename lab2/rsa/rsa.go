@@ -106,8 +106,8 @@ func main() {
 	message := "SLAVA UKRAINE"
 	fmt.Println("Initial Message: " + message)
 
-	encryptMessage := make([]int64, 200)
-	decryptMessage := make([]int64, 200)
+	encryptMessage := make([]int64, len(message))
+	decryptMessage := make([]int64, len(message))
 
 	for i := range message {
 		encryptMessage[i] = Encrypt(keys.publicKey, int64(message[i]))

@@ -1,4 +1,4 @@
-package vernam
+package main
 
 import "fmt"
 
@@ -36,24 +36,22 @@ func decodePair(a, b rune) rune {
 	return ((((a - 'A') - (b - 'A')) + 26) % 26) + 'A'
 }
 
-func Encode(msg, key string) string {
-	checkAlphabetical(&msg)
-	checkAlphabetical(&key)
+func Encode(msg, key string) []rune {
 	out := make([]rune, 0, len(msg))
 	for i, v := range msg {
-		out = append(out, encodePair(v, rune(key[i%len(key)])))
+		//out = append(out, encodePair(v, rune(key[i%len(key)])))
+		out = append(out, v^rune(key[i%len(key)]))
 	}
-	return string(out)
+	return out
 }
 
-func Decode(msg, key string) string {
-	checkAlphabetical(&msg)
-	checkAlphabetical(&key)
+func Decode(msg []rune, key string) []rune {
 	out := make([]rune, 0, len(msg))
 	for i, v := range msg {
-		out = append(out, decodePair(v, rune(key[i%len(key)])))
+		//out = append(out, encodePair(v, rune(key[i%len(key)])))
+		out = append(out, v^rune(key[i%len(key)]))
 	}
-	return string(out)
+	return out
 }
 
 func main() {
@@ -64,5 +62,5 @@ func main() {
 	decoded := Decode(encoded, key)
 
 	fmt.Println(encoded)
-	fmt.Println(decoded)
+	fmt.Println(string(decoded))
 }
