@@ -55,7 +55,8 @@ func generatePrimaryKey() int64 {
 
 func generatePublicKey(n int64) int64 {
 	generated := rand.Int63n(n-1) + 1
-	for ; !TestFerma(generated); generated = rand.Int63n(n-1) + 1 {
+	for !TestFerma(generated) {
+		generated = rand.Int63n(n-1) + 1
 	}
 	return generated
 }
