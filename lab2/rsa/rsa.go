@@ -18,42 +18,51 @@ type Keys struct {
 	privateKey Pair
 }
 
-//https://ru.wikipedia.org/wiki/%D0%A2%D0%B5%D1%81%D1%82_%D0%9C%D0%B8%D0%BB%D0%BB%D0%B5%D1%80%D0%B0_%E2%80%94_%D0%A0%D0%B0%D0%B1%D0%B8%D0%BD%D0%B0
-func rabinMiller(n int64) uint8 {
-	var ok uint8 = 1
-	for i := 1; i <= 5 && ok == 1; i++ {
-		//случайное целое число a в отрезке [2, n − 2]
-		var a = rand.Int63n(n-2) + 2
-		var result = modularPow.ModularPow(a, n-1, n)
-		if result == 1 || result == n-1 {
-			ok &= 1
-		} else {
-			ok &= 0
+func TestFerma(phi int64) bool {
+	if phi == 2 {
+		return true
+	}
+	if phi&1 != 1 {
+		return false
+	}
+	for i := 0; i < 5; i++ {
+		a := rand.Int63n(phi-1) + 1
+		gcd, _, _ := euclid.Gcd(a, phi)
+		if gcd != 1 || modularPow.ModularPow(a, phi-1, phi) != 1 {
+			return false
 		}
 	}
-	return ok
+	return true
+}
+
+func rabinMiller(n int64) bool {
+	for i := 0; i < 5; i++ {
+		a := rand.Int63n(n-2) + 2
+		if modularPow.ModularPow(a, n-1, n) != 1 {
+			return false
+		}
+	}
+	return true
 }
 
 func generatePrimaryKey() int64 {
 	generated := rand.Int63() % 1000
-	for ; rabinMiller(generated) == 0; rabinMiller(generated) {
+	for !rabinMiller(generated) {
 		generated = rand.Int63() % 1000
 	}
 	return generated
 }
 
 func generatePublicKey(n int64) int64 {
-	generated := rand.Int63() % 1000
-	for gcd, _, _ := euclid.Gcd(n, generated); gcd != 1; gcd, _, _ = euclid.Gcd(n, generated) {
-		generated = rand.Int63() % 1000
+	generated := rand.Int63n(n-1) + 1
+	for ; !TestFerma(generated); generated = rand.Int63n(n-1) + 1 {
 	}
 	return generated
 }
 
 func modularInverse(n int64, mod int64) int64 {
-	_, _, inverse := euclid.Gcd(n, mod)
-	for inverse < 0 {
-		inverse += mod
+	_, inverse, _ := euclid.Gcd(n, mod)
+	for ; inverse < 0; inverse += mod {
 	}
 	return inverse
 }
@@ -71,21 +80,21 @@ func generateKeys() Keys {
 	phi := (p - 1) * (q - 1)
 	e := generatePublicKey(phi)
 
-	result.publicKey = Pair{n, e}
+	result.publicKey = Pair{e, n}
 
 	//вычисление секретной экспаненты
 	d := modularInverse(e, phi)
 
-	result.privateKey = Pair{n, d}
+	result.privateKey = Pair{d, n}
 	return result
 }
 
-func Encrypt(key Keys, value int64) int64 {
-	return modularPow.ModularPow(value, key.publicKey.second, key.publicKey.first)
+func Encrypt(key Pair, value int64) int64 {
+	return modularPow.ModularPow(value, key.first, key.second)
 }
 
-func Decrypt(key Keys, value int64) int64 {
-	return modularPow.ModularPow(value, key.privateKey.second, key.privateKey.first)
+func Decrypt(key Pair, value int64) int64 {
+	return modularPow.ModularPow(value, key.first, key.second)
 }
 
 func main() {
@@ -93,4 +102,21 @@ func main() {
 	keys := generateKeys()
 	fmt.Printf("Public key: %d, %d\n", keys.publicKey.first, keys.publicKey.second)
 	fmt.Printf("Private key: %d, %d\n", keys.privateKey.first, keys.privateKey.second)
+	message := "SLAVA UKRAINE"
+	fmt.Println("Initial Message: " + message)
+
+	encryptMessage := make([]int64, 200)
+	decryptMessage := make([]int64, 200)
+
+	for i := range message {
+		encryptMessage[i] = Encrypt(keys.publicKey, int64(message[i]))
+	}
+
+	for i := range message {
+		decryptMessage[i] = Decrypt(keys.privateKey, encryptMessage[i])
+	}
+
+	for i := range message {
+		fmt.Print(string(decryptMessage[i]))
+	}
 }
