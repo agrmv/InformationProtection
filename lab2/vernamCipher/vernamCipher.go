@@ -1,30 +1,32 @@
 package main
 
-import "fmt"
+import (
+	"../renameMe"
+)
 
-func Encode(msg, key string) []rune {
-	out := make([]rune, 0, len(msg))
-	for i, v := range msg {
-		out = append(out, v^rune(key[i%len(key)]))
+func Encode(message []byte, key string) []byte {
+	out := make([]byte, 0, len(message))
+	for i, v := range message {
+		out = append(out, v^(key[i%len(key)]))
 	}
 	return out
 }
 
-func Decode(msg []rune, key string) []rune {
-	out := make([]rune, 0, len(msg))
-	for i, v := range msg {
-		out = append(out, v^rune(key[i%len(key)]))
+func Decode(message []byte, key string) []byte {
+	out := make([]byte, 0, len(message))
+	for i, v := range message {
+		out = append(out, v^(key[i%len(key)]))
 	}
 	return out
 }
 
 func main() {
-	key := "papich"
-	message := "Vsem moim bratyam salam"
 
-	encoded := Encode(message, key)
-	decoded := Decode(encoded, key)
+	file, _ := renameMe.ReadFile("lab2/resourcesGlobal/test.txt")
+	key, _ := renameMe.ReadFile("lab2/vernamCipher/resources/key.txt")
 
-	fmt.Println(encoded)
-	fmt.Println(string(decoded))
+	encoded := Encode(file, string(key))
+	decoded := Decode(encoded, string(key))
+
+	renameMe.WriteFile(decoded)
 }
