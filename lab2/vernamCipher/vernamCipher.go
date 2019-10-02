@@ -28,5 +28,6 @@ func main() {
 	encoded := Encode(file, string(key))
 	decoded := Decode(encoded, string(key))
 
+	renameMe.WriteFile("lab2/vernamCipher/resources/encode.jpg", encoded)
 	renameMe.WriteFile("lab2/vernamCipher/resources/decode.jpg", decoded)
 }

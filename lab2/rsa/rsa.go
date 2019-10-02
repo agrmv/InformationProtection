@@ -83,6 +83,7 @@ func main() {
 
 	encryptMessage := make([]int64, fileSize)
 	decryptMessage := make([]byte, fileSize)
+	encryptMessageBytes := make([]byte, fileSize)
 
 	for i, v := range file {
 		encryptMessage[i] = Encrypt(keys.publicKey, int64(v))
@@ -92,5 +93,10 @@ func main() {
 		decryptMessage[i] = byte(Decrypt(keys.privateKey, v))
 	}
 
+	for i, v := range encryptMessage {
+		encryptMessageBytes[i] = byte(v)
+	}
+
+	renameMe.WriteFile("lab2/rsa/resources/encode.jpg", encryptMessageBytes)
 	renameMe.WriteFile("lab2/rsa/resources/decode.jpg", decryptMessage)
 }

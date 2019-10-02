@@ -17,14 +17,14 @@ func ReadFile(path string) ([]byte, int64) {
 		checkError(err)
 	}()
 
-	fi, err := file.Stat()
+	fileInfo, err := file.Stat()
 	checkError(err)
 
-	bytes := make([]byte, fi.Size())
+	bytes := make([]byte, fileInfo.Size())
 	_, err = file.Read(bytes)
 	checkError(err)
 
-	return bytes, fi.Size()
+	return bytes, fileInfo.Size()
 }
 
 func WriteFile(path string, bytes []byte) {
