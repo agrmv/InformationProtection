@@ -8,7 +8,7 @@ func checkError(e error) {
 	}
 }
 
-func ReadFile(path string) ([]byte, int) {
+func ReadFile(path string) ([]byte, int64) {
 	file, err := os.Open(path)
 	checkError(err)
 
@@ -21,10 +21,10 @@ func ReadFile(path string) ([]byte, int) {
 	checkError(err)
 
 	bytes := make([]byte, fi.Size())
-	countBytes, err := file.Read(bytes)
+	_, err = file.Read(bytes)
 	checkError(err)
 
-	return bytes, countBytes
+	return bytes, fi.Size()
 }
 
 func WriteFile(path string, bytes []byte) {

@@ -79,10 +79,10 @@ func main() {
 	keys := generateKeys()
 	fmt.Printf("Public key: %d, %d\n", keys.publicKey.first, keys.publicKey.second)
 	fmt.Printf("Private key: %d, %d\n", keys.privateKey.first, keys.privateKey.second)
-	file, _ := renameMe.ReadFile("lab2/resourcesGlobal/test.jpg")
+	file, fileSize := renameMe.ReadFile("lab2/resourcesGlobal/test.jpg")
 
-	encryptMessage := make([]int64, len(file))
-	decryptMessage := make([]byte, len(file))
+	encryptMessage := make([]int64, fileSize)
+	decryptMessage := make([]byte, fileSize)
 
 	for i, v := range file {
 		encryptMessage[i] = Encrypt(keys.publicKey, int64(v))
