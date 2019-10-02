@@ -27,8 +27,8 @@ func ReadFile(path string) ([]byte, int) {
 	return bytes, countBytes
 }
 
-func WriteFile(bytes []byte) {
-	file, err := os.Create("lab2/vernamCipher/resources/decode.txt")
+func WriteFile(path string, bytes []byte) {
+	file, err := os.Create(path)
 	checkError(err)
 
 	_, err = file.Write(bytes)

@@ -22,11 +22,11 @@ func Decode(message []byte, key string) []byte {
 
 func main() {
 
-	file, _ := renameMe.ReadFile("lab2/resourcesGlobal/test.txt")
+	file, _ := renameMe.ReadFile("lab2/resourcesGlobal/test.jpg")
 	key, _ := renameMe.ReadFile("lab2/vernamCipher/resources/key.txt")
 
 	encoded := Encode(file, string(key))
 	decoded := Decode(encoded, string(key))
 
-	renameMe.WriteFile(decoded)
+	renameMe.WriteFile("lab2/vernamCipher/resources/decode.jpg", decoded)
 }

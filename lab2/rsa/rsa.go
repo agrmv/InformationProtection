@@ -3,6 +3,7 @@ package main
 
 import (
 	"../../methods"
+	"../renameMe"
 	"fmt"
 	"math/rand"
 	"time"
@@ -78,21 +79,18 @@ func main() {
 	keys := generateKeys()
 	fmt.Printf("Public key: %d, %d\n", keys.publicKey.first, keys.publicKey.second)
 	fmt.Printf("Private key: %d, %d\n", keys.privateKey.first, keys.privateKey.second)
-	message := "SLAVA UKRAINE"
-	fmt.Println("Initial Message: " + message)
+	file, _ := renameMe.ReadFile("lab2/resourcesGlobal/test.jpg")
 
-	encryptMessage := make([]int64, len(message))
-	decryptMessage := make([]int64, len(message))
+	encryptMessage := make([]int64, len(file))
+	decryptMessage := make([]byte, len(file))
 
-	for i := range message {
-		encryptMessage[i] = Encrypt(keys.publicKey, int64(message[i]))
+	for i, v := range file {
+		encryptMessage[i] = Encrypt(keys.publicKey, int64(v))
 	}
 
-	for i := range message {
-		decryptMessage[i] = Decrypt(keys.privateKey, encryptMessage[i])
+	for i, v := range encryptMessage {
+		decryptMessage[i] = byte(Decrypt(keys.privateKey, v))
 	}
 
-	for i := range message {
-		fmt.Print(string(decryptMessage[i]))
-	}
+	renameMe.WriteFile("lab2/rsa/resources/decode.jpg", decryptMessage)
 }
