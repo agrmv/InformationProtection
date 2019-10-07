@@ -3,7 +3,6 @@ package main
 
 import (
 	"../../methods"
-	"../renameMe"
 	"fmt"
 	"math/rand"
 	"time"
@@ -79,7 +78,7 @@ func main() {
 	keys := generateKeys()
 	fmt.Printf("Public key: %d, %d\n", keys.publicKey.first, keys.publicKey.second)
 	fmt.Printf("Private key: %d, %d\n", keys.privateKey.first, keys.privateKey.second)
-	file, fileSize := renameMe.ReadFile("lab2/resourcesGlobal/test.jpg")
+	file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
 
 	encryptMessage := make([]int64, fileSize)
 	decryptMessage := make([]byte, fileSize)
@@ -97,6 +96,6 @@ func main() {
 		encryptMessageBytes[i] = byte(v)
 	}
 
-	renameMe.WriteFile("lab2/rsa/resources/encode.jpg", encryptMessageBytes)
-	renameMe.WriteFile("lab2/rsa/resources/decode.jpg", decryptMessage)
+	methods.WriteFile("lab2/rsa/resources/encode.jpg", encryptMessageBytes)
+	methods.WriteFile("lab2/rsa/resources/decode.jpg", decryptMessage)
 }

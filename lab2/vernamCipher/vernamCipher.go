@@ -1,7 +1,7 @@
 package main
 
 import (
-	"../renameMe"
+	"../../methods"
 )
 
 func Encode(message []byte, key string) []byte {
@@ -22,12 +22,12 @@ func Decode(message []byte, key string) []byte {
 
 func main() {
 
-	file, _ := renameMe.ReadFile("lab2/resourcesGlobal/test.jpg")
-	key, _ := renameMe.ReadFile("lab2/vernamCipher/resources/key.txt")
+	file, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+	key, _ := methods.ReadFile("lab2/vernamCipher/resources/key.txt")
 
 	encoded := Encode(file, string(key))
 	decoded := Decode(encoded, string(key))
 
-	renameMe.WriteFile("lab2/vernamCipher/resources/encode.jpg", encoded)
-	renameMe.WriteFile("lab2/vernamCipher/resources/decode.jpg", decoded)
+	methods.WriteFile("lab2/vernamCipher/resources/encode.jpg", encoded)
+	methods.WriteFile("lab2/vernamCipher/resources/decode.jpg", decoded)
 }

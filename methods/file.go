@@ -1,6 +1,8 @@
-package renameMe
+package methods
 
-import "os"
+import (
+	"os"
+)
 
 func checkError(e error) {
 	if e != nil {
