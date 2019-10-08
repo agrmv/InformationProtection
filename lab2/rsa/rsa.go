@@ -96,7 +96,6 @@ func getKeyFromJson(path string) Pair {
 
 func EncryptMessage(file []byte, fileSize int64, keys Keys, message *Message) {
 	message.encryptMessage = make([]int64, fileSize)
-
 	for i, v := range file {
 		message.encryptMessage[i] = Encrypt(keys.PublicKey, int64(v))
 	}

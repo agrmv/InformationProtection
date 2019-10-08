@@ -62,7 +62,6 @@ func main() {
 		file, _ := methods.ReadFile("lab2/vernamCipher/resources/encrypted.jpg")
 		decoded := Decrypt(file, getKeyFromJson("lab2/vernamCipher/resources/privateKey.json"))
 		methods.WriteFile("lab2/vernamCipher/resources/decrypted.jpg", decoded)
-
 	default:
 		fmt.Println("Incorrect option")
 	}

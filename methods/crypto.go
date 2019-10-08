@@ -77,7 +77,7 @@ func TestFerma(n int64, k int) bool {
 func GeneratePrime(generator func() int64) int64 {
 	for {
 		prime := generator()
-		if TestFerma(prime, 3) {
+		if TestFerma(prime, 5) {
 			return prime
 		}
 	}
