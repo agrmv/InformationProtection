@@ -73,3 +73,16 @@ func TestFerma(n int64, k int) bool {
 	}
 	return true
 }
+
+func GeneratePrime(generator func() int64) int64 {
+	for {
+		prime := generator()
+		if TestFerma(prime, 3) {
+			return prime
+		}
+	}
+}
+
+func DefaultGeneratePrime() int64 {
+	return GeneratePrime(rand.Int63)
+}

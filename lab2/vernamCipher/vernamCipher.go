@@ -2,9 +2,14 @@ package main
 
 import (
 	"../../methods"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
 )
 
-func Encode(message []byte, key string) []byte {
+func Encrypt(message []byte, key string) []byte {
 	out := make([]byte, 0, len(message))
 	for i, v := range message {
 		out = append(out, v^(key[i%len(key)]))
@@ -12,22 +17,53 @@ func Encode(message []byte, key string) []byte {
 	return out
 }
 
-func Decode(message []byte, key string) []byte {
+func Decrypt(message []byte, key string) []byte {
 	out := make([]byte, 0, len(message))
 	for i, v := range message {
 		out = append(out, v^(key[i%len(key)]))
 	}
 	return out
+}
+
+func generatePrivateKey(n int) string {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
+	}
+	return string(b)
+}
+
+func writeKeyToJson(path, key string) {
+	privateKey, _ := json.Marshal(key)
+	_ = ioutil.WriteFile(path, privateKey, 0644)
+}
+
+func getKeyFromJson(path string) string {
+	file, _ := ioutil.ReadFile(path)
+	var key string
+	_ = json.Unmarshal(file, &key)
+	return key
 }
 
 func main() {
 
 	file, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-	key, _ := methods.ReadFile("lab2/vernamCipher/resources/key.txt")
 
-	encoded := Encode(file, string(key))
-	decoded := Decode(encoded, string(key))
+	fmt.Print("Choose n option:\n1)Encrypt\n2)Decrypt\n:")
+	var option int
+	_, _ = fmt.Fscan(os.Stdin, &option)
+	switch option {
+	case 1:
+		writeKeyToJson("lab2/vernamCipher/resources/privateKey.json", generatePrivateKey(10))
+		encoded := Encrypt(file, getKeyFromJson("lab2/vernamCipher/resources/privateKey.json"))
+		methods.WriteFile("lab2/vernamCipher/resources/encrypted.jpg", encoded)
+	case 2:
+		file, _ := methods.ReadFile("lab2/vernamCipher/resources/encrypted.jpg")
+		decoded := Decrypt(file, getKeyFromJson("lab2/vernamCipher/resources/privateKey.json"))
+		methods.WriteFile("lab2/vernamCipher/resources/decrypted.jpg", decoded)
 
-	methods.WriteFile("lab2/vernamCipher/resources/encode.jpg", encoded)
-	methods.WriteFile("lab2/vernamCipher/resources/decode.jpg", decoded)
+	default:
+		fmt.Println("Incorrect option")
+	}
 }
