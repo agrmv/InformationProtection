@@ -94,7 +94,7 @@ func getKeyFromJson(path string) Pair {
 	return keys
 }
 
-func getEncryptMessage(file []byte, fileSize int64, keys Keys, message *Message) {
+func EncryptMessage(file []byte, fileSize int64, keys Keys, message *Message) {
 	message.encryptMessage = make([]int64, fileSize)
 
 	for i, v := range file {
@@ -102,7 +102,7 @@ func getEncryptMessage(file []byte, fileSize int64, keys Keys, message *Message)
 	}
 }
 
-func getDecryptMessage(keys Pair, message *Message) {
+func DecryptMessage(keys Pair, message *Message) {
 	message.decryptMessage = make([]byte, len(message.encryptMessage))
 	for i, v := range message.encryptMessage {
 		message.decryptMessage[i] = byte(Decrypt(keys, v))
@@ -122,38 +122,14 @@ func main() {
 		keys := generateKeys()
 		writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys)
 		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-		getEncryptMessage(file, fileSize, keys, &message)
-		getDecryptMessage(getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
+		EncryptMessage(file, fileSize, keys, &message)
+		DecryptMessage(getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
 		methods.WriteFile("lab2/rsa/resources/decrypt.jpg", message.decryptMessage)
 	case 2:
 		/*file, fileSize := methods.ReadFile("lab2/rsa/resources/encrypt.jpg")
-		getDecryptMessage(file, fileSize, getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
+		DecryptMessage(file, fileSize, getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
 		methods.WriteFile("lab2/rsa/resources/decrypt.jpg", message.decryptMessage)*/
 	default:
 		fmt.Println("Incorrect option")
 	}
-
-	/*keys := generateKeys()
-	fmt.Printf("Public key: %d, %d\n", keys.PublicKey.first, keys.PublicKey.second)
-	fmt.Printf("Private key: %d, %d\n", keys.PrivateKey.first, keys.PrivateKey.second)
-	file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-
-	encryptMessage := make([]int64, fileSize)
-	decryptMessage := make([]byte, fileSize)
-	encryptMessageBytes := make([]byte, fileSize)
-
-	for i, v := range file {
-		encryptMessage[i] = Encrypt(keys.PublicKey, int64(v))
-	}
-
-	for i, v := range encryptMessage {
-		decryptMessage[i] = byte(Decrypt(keys.PrivateKey, v))
-	}
-
-	for i, v := range encryptMessage {
-		encryptMessageBytes[i] = byte(v)
-	}
-
-	methods.WriteFileByte("lab2/rsa/resources/encode.jpg", encryptMessageBytes)
-	methods.WriteFileByte("lab2/rsa/resources/decode.jpg", decryptMessage)*/
 }
