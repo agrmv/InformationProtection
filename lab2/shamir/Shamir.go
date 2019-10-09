@@ -20,22 +20,11 @@ func GenerateCD(C *int64, D *int64, p int64) {
 	}
 }
 
-func GeneratePrime(max int64) int64 {
-	var p int64
-	for true {
-		p = rand2.Int63n(max)
-		if methods.TestFerma(p, 20) {
-			break
-		}
-	}
-	return p
-}
-
 func Shamir(m int64) {
 	var Ca, Da, p int64
 	var Cb, Db int64
 
-	p = GeneratePrime(1000) // генерируем общее простое число
+	p = methods.GeneratePrimes(100) // генерируем общее простое число
 
 	GenerateCD(&Ca, &Da, p) // генерируем взаимно-простые C и D для Алисы
 	fmt.Printf("\nCa = %d, Da = %d, p = %d", Ca, Da, p)

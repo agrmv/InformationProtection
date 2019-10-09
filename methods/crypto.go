@@ -83,6 +83,17 @@ func GeneratePrime(generator func() int64) int64 {
 	}
 }
 
+func GeneratePrimes(max int64) int64 {
+	var p int64
+	for true {
+		p = rand.Int63n(max)
+		if TestFerma(p, 20) {
+			break
+		}
+	}
+	return p
+}
+
 func DefaultGeneratePrime() int64 {
 	return GeneratePrime(rand.Int63)
 }
