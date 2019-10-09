@@ -4,10 +4,8 @@ package main
 import (
 	"../../methods"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"os"
 	"time"
 )
 
@@ -22,7 +20,7 @@ type Keys struct {
 }
 
 type Message struct {
-	encryptMessage []byte
+	encryptMessage []int64
 	decryptMessage []byte
 }
 
@@ -74,8 +72,8 @@ func Decrypt(key Pair, value int64) int64 {
 	return methods.ModularPow(value, key.First, key.Second)
 }
 
-func writeKeyToJson(path string, keys Pair) {
-	privateKeys, _ := json.Marshal(keys)
+func writeKeyToJson(path string, keys Keys) {
+	privateKeys, _ := json.Marshal(keys.PrivateKey)
 	_ = ioutil.WriteFile(path, privateKeys, 0644)
 }
 
@@ -86,17 +84,17 @@ func getKeyFromJson(path string) Pair {
 	return keys
 }
 
-func EncryptMessage(file []byte, fileSize int64, keys Pair, message *Message) {
-	message.encryptMessage = make([]byte, fileSize)
+func EncryptMessage(file []byte, fileSize int64, keys Keys, message *Message) {
+	message.encryptMessage = make([]int64, fileSize)
 	for i, v := range file {
-		message.encryptMessage[i] = byte(Encrypt(keys, int64(v)))
+		message.encryptMessage[i] = Encrypt(keys.PublicKey, int64(v))
 	}
 }
 
-func DecryptMessage(file []byte, fileSize int64, keys Pair, message *Message) {
-	message.decryptMessage = make([]byte, fileSize)
-	for i, v := range file {
-		message.decryptMessage[i] = byte(Decrypt(keys, int64(v)))
+func DecryptMessage(keys Pair, message *Message) {
+	message.decryptMessage = make([]byte, len(message.encryptMessage))
+	for i, v := range message.encryptMessage {
+		message.decryptMessage[i] = byte(Decrypt(keys, v))
 	}
 }
 
@@ -105,21 +103,18 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	message := Message{}
 
-	fmt.Print("Choose n option:\n1)Encrypt\n2)Decrypt\n:")
-	var option int
-	_, _ = fmt.Fscan(os.Stdin, &option)
-	switch option {
-	case 1:
-		keys := generateKeys()
-		writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys.PrivateKey)
-		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-		EncryptMessage(file, fileSize, keys.PublicKey, &message)
-		methods.WriteFile("lab2/rsa/resources/encrypt.jpg", message.encryptMessage)
-	case 2:
-		file, fileSize := methods.ReadFile("lab2/rsa/resources/encrypt.jpg")
-		DecryptMessage(file, fileSize, getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
-		methods.WriteFile("lab2/rsa/resources/decrypt.jpg", message.decryptMessage)
-	default:
-		fmt.Println("Incorrect option")
+	keys := generateKeys()
+	writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys)
+	file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+	EncryptMessage(file, fileSize, keys, &message)
+
+	messageEncrypt := make([]byte, len(message.encryptMessage))
+	for i, v := range message.encryptMessage {
+		messageEncrypt[i] = byte(v)
 	}
+	methods.WriteFile("lab2/rsa/resources/encrypt.jpg", messageEncrypt)
+
+	DecryptMessage(getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
+	methods.WriteFile("lab2/rsa/resources/decrypt.jpg", message.decryptMessage)
+
 }
