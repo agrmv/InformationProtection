@@ -2,7 +2,8 @@ package main
 
 import (
 	"../../methods"
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
 	rand2 "math/rand"
 )
 
@@ -22,6 +23,11 @@ type Shamir struct {
 	p          int64
 	m          int64
 }*/
+
+type Message struct {
+	encryptMessage []int64
+	decryptMessage []byte
+}
 
 func GenerateCD(keys *Pair, p int64) Pair {
 	keys.First = int64(1)
@@ -54,24 +60,42 @@ func Decrypt(bob Pair, p, encrypt int64) int64 {
 	return methods.ModularPow(methods.ModularPow(encrypt, bob.First, p), bob.Second, p)
 }
 
+func EncryptMessage(file []byte, fileSize int64, keys Keys, message *Message, p int64) {
+	message.encryptMessage = make([]int64, fileSize)
+	for i, v := range file {
+		message.encryptMessage[i] = Encrypt(keys.AliceKeys, int64(v), p)
+	}
+}
+
+func DecryptMessage(keys Pair, message *Message, p int64) {
+	message.decryptMessage = make([]byte, len(message.encryptMessage))
+	for i, v := range message.encryptMessage {
+		message.decryptMessage[i] = byte(Decrypt(keys, p, v))
+	}
+}
+
+func writeKeyToJson(path string, bob Pair) {
+	privateKeys, _ := json.Marshal(bob)
+	_ = ioutil.WriteFile(path, privateKeys, 0644)
+}
+
+func getKeyFromJson(path string) Pair {
+	file, _ := ioutil.ReadFile(path)
+	keys := Pair{}
+	_ = json.Unmarshal(file, &keys)
+	return keys
+}
+
 func main() {
 	p := methods.DefaultGeneratePrime() // генерируем общее простое число
 	keys := Keys{}
 	generateAliceKeys(&keys, p)
 	generateBobKeys(&keys, p)
 
-	m := int64(45)
-
-	encrypted := Encrypt(keys.AliceKeys, m, p)
-	decrypted := Decrypt(keys.BobKeys, p, encrypted)
-
-	fmt.Printf("Secret message: %d\n", m)
-
-	fmt.Printf("step4: %d\n", decrypted)
-
-	if decrypted == m {
-		fmt.Println("SUCCESS!!!")
-	} else {
-		fmt.Println("something went wrong")
-	}
+	message := Message{}
+	writeKeyToJson("lab2/shamir/resources/privateKeys.json", keys.BobKeys)
+	file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+	EncryptMessage(file, fileSize, keys, &message, p)
+	DecryptMessage(getKeyFromJson("lab2/shamir/resources/privateKeys.json"), &message, p)
+	methods.WriteFile("lab2/shamir/resources/decrypt.jpg", message.decryptMessage)
 }
