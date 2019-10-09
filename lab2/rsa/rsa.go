@@ -27,20 +27,12 @@ type Message struct {
 }
 
 func generatePrivateKey() int64 {
-	generated := rand.Int63() % 1000
-	for !methods.TestFerma(generated, 5) {
-		generated = rand.Int63() % 1000
-	}
-	return generated
+	return methods.DefaultGeneratePrime()
 }
 
 //(1 < e < phi)
 func getOpenExp(phi int64) int64 {
-	generated := rand.Int63n(phi-1) + 1
-	for !methods.TestFerma(generated, 5) {
-		generated = rand.Int63n(phi-1) + 1
-	}
-	return generated
+	return methods.DefaultGeneratePrime()
 }
 
 //d = e^-1 mod phi
