@@ -66,20 +66,8 @@ func Encrypt(key Pair, value int64) int64 {
 	return methods.ModularPow(value, key.First, key.Second)
 }
 
-func Decrypt(key Pair, value int64) int64 {
-	return methods.ModularPow(value, key.First, key.Second)
-}
-
-func writeKeyToJson(path string, keys Pair) {
-	privateKeys, _ := json.Marshal(keys)
-	_ = ioutil.WriteFile(path, privateKeys, 0644)
-}
-
-func getKeyFromJson(path string) Pair {
-	file, _ := ioutil.ReadFile(path)
-	keys := Pair{}
-	_ = json.Unmarshal(file, &keys)
-	return keys
+func Decrypt(key Keys, value int64) int64 {
+	return methods.ModularPow(value, key.PrivateKey.First, key.PrivateKey.Second)
 }
 
 func EncryptMessage(file []byte, fileSize int64, keys Pair, message *Message) {
@@ -89,11 +77,31 @@ func EncryptMessage(file []byte, fileSize int64, keys Pair, message *Message) {
 	}
 }
 
-func DecryptMessage(keys Pair, message *Message) {
+func DecryptMessage(keys Keys, message *Message) {
 	message.decryptMessage = make([]byte, len(message.encryptMessage))
 	for i, v := range message.encryptMessage {
 		message.decryptMessage[i] = byte(Decrypt(keys, v))
 	}
+}
+
+func writeEncryptedMessage(encryptMessage []int64) {
+	message := make([]byte, len(encryptMessage))
+	for i, v := range encryptMessage {
+		message[i] = byte(v)
+	}
+	methods.WriteFile("lab2/rsa/resources/encrypt.jpg", message)
+}
+
+func writeKeyToJson(path string, keys Keys) {
+	marshalKeys, _ := json.Marshal(keys)
+	_ = ioutil.WriteFile(path, marshalKeys, 0644)
+}
+
+func getKeyFromJson(path string) Keys {
+	file, _ := ioutil.ReadFile(path)
+	keys := Keys{}
+	_ = json.Unmarshal(file, &keys)
+	return keys
 }
 
 func main() {
@@ -101,9 +109,10 @@ func main() {
 	keys := generateKeys()
 	message := Message{}
 	{
-		writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys.PrivateKey)
+		writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys)
 		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
 		EncryptMessage(file, fileSize, keys.PublicKey, &message)
+		writeEncryptedMessage(message.encryptMessage)
 		//methods.WriteFile("lab2/rsa/resources/encrypt.jpg", message.encryptMessage)
 	}
 	{
