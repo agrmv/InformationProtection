@@ -3,10 +3,8 @@ package main
 import (
 	"../../methods"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"os"
 )
 
 func Encrypt(message []byte, key string) []byte {
@@ -47,22 +45,15 @@ func getKeyFromJson(path string) string {
 }
 
 func main() {
-
-	file, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-
-	fmt.Print("Choose n option:\n1)Encrypt\n2)Decrypt\n:")
-	var option int
-	_, _ = fmt.Fscan(os.Stdin, &option)
-	switch option {
-	case 1:
+	{
+		file, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
 		writeKeyToJson("lab2/vernamCipher/resources/privateKey.json", generatePrivateKey(10))
 		encoded := Encrypt(file, getKeyFromJson("lab2/vernamCipher/resources/privateKey.json"))
 		methods.WriteFile("lab2/vernamCipher/resources/encrypted.jpg", encoded)
-	case 2:
+	}
+	{
 		file, _ := methods.ReadFile("lab2/vernamCipher/resources/encrypted.jpg")
 		decoded := Decrypt(file, getKeyFromJson("lab2/vernamCipher/resources/privateKey.json"))
 		methods.WriteFile("lab2/vernamCipher/resources/decrypted.jpg", decoded)
-	default:
-		fmt.Println("Incorrect option")
 	}
 }

@@ -5,8 +5,6 @@ import (
 	"../../methods"
 	"encoding/json"
 	"io/ioutil"
-	"math/rand"
-	"time"
 )
 
 type Pair struct {
@@ -25,12 +23,12 @@ type Message struct {
 }
 
 func generatePrivateKey() int64 {
-	return methods.DefaultGeneratePrime()
+	return methods.LimitedGeneratePrime(1000)
 }
 
 //(1 < e < phi)
 func getOpenExp(phi int64) int64 {
-	return methods.DefaultGeneratePrime()
+	return methods.LimitedGeneratePrime(phi)
 }
 
 //d = e^-1 mod phi
@@ -72,8 +70,8 @@ func Decrypt(key Pair, value int64) int64 {
 	return methods.ModularPow(value, key.First, key.Second)
 }
 
-func writeKeyToJson(path string, keys Keys) {
-	privateKeys, _ := json.Marshal(keys.PrivateKey)
+func writeKeyToJson(path string, keys Pair) {
+	privateKeys, _ := json.Marshal(keys)
 	_ = ioutil.WriteFile(path, privateKeys, 0644)
 }
 
@@ -84,10 +82,10 @@ func getKeyFromJson(path string) Pair {
 	return keys
 }
 
-func EncryptMessage(file []byte, fileSize int64, keys Keys, message *Message) {
+func EncryptMessage(file []byte, fileSize int64, keys Pair, message *Message) {
 	message.encryptMessage = make([]int64, fileSize)
 	for i, v := range file {
-		message.encryptMessage[i] = Encrypt(keys.PublicKey, int64(v))
+		message.encryptMessage[i] = Encrypt(keys, int64(v))
 	}
 }
 
@@ -100,21 +98,17 @@ func DecryptMessage(keys Pair, message *Message) {
 
 func main() {
 
-	rand.Seed(time.Now().UnixNano())
-	message := Message{}
-
 	keys := generateKeys()
-	writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys)
-	file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-	EncryptMessage(file, fileSize, keys, &message)
-
-	messageEncrypt := make([]byte, len(message.encryptMessage))
-	for i, v := range message.encryptMessage {
-		messageEncrypt[i] = byte(v)
+	message := Message{}
+	{
+		writeKeyToJson("lab2/rsa/resources/privateKeys.json", keys.PrivateKey)
+		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+		EncryptMessage(file, fileSize, keys.PublicKey, &message)
+		//methods.WriteFile("lab2/rsa/resources/encrypt.jpg", message.encryptMessage)
 	}
-	methods.WriteFile("lab2/rsa/resources/encrypt.jpg", messageEncrypt)
-
-	DecryptMessage(getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
-	methods.WriteFile("lab2/rsa/resources/decrypt.jpg", message.decryptMessage)
-
+	{
+		//file, fileSize := methods.ReadFile("lab2/rsa/resources/encrypt.jpg")
+		DecryptMessage(getKeyFromJson("lab2/rsa/resources/privateKeys.json"), &message)
+		methods.WriteFile("lab2/rsa/resources/decrypt.jpg", message.decryptMessage)
+	}
 }

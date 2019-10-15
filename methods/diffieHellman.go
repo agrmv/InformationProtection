@@ -1,4 +1,4 @@
-package diffieHellman
+package methods
 
 import (
 	"crypto/rand"
