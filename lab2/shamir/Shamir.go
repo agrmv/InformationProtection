@@ -66,6 +66,14 @@ func DecryptMessage(keys Keys, message *Message, p int64) {
 	fmt.Println(message.decryptMessage)
 }
 
+func writeEncryptedMessage(encryptMessage []int64) {
+	message := make([]byte, len(encryptMessage))
+	for i, v := range encryptMessage {
+		message[i] = byte(v)
+	}
+	methods.WriteFile("lab2/rsa/resources/encrypt.jpg", message)
+}
+
 func writeKeyToJson(path string, keys Keys) {
 	privateKeys, _ := json.Marshal(keys)
 	_ = ioutil.WriteFile(path, privateKeys, 0644)
@@ -87,6 +95,7 @@ func main() {
 		writeKeyToJson("lab2/shamir/resources/privateKeys.json", keys)
 		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
 		EncryptMessage(file, fileSize, keys, &message, p)
+		writeEncryptedMessage(message.encryptMessage)
 		//methods.WriteFile("lab2/shamir/resources/encrypt.txt", message.encryptMessage)
 	}
 	{
