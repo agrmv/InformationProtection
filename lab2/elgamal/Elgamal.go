@@ -1,11 +1,9 @@
 package main
 
 import (
-	"../../lab1/diffieHellman"
 	"../../methods"
 	"fmt"
 	"math"
-	"math/rand"
 )
 
 type Alice struct {
@@ -21,33 +19,21 @@ type Bob struct {
 	y              int64
 }
 
-func generateSessionKey(P int64) int64 {
-	var key int64
-	for true {
-		key = rand.Int63n(P)
-
-		if key > 1 {
-			break
-		}
-	}
-	return key
-}
-
 func main() {
 	var A Alice
 	A.message = 10 //strconv.ParseInt(os.Args[1], 10, 64)
 	var P, g int64
 	for true {
-		P, _, g = diffieHellman.GeneratePQg(20)
+		P, _, g = methods.GeneratePQg(20)
 		if P > A.message {
 			break
 		}
 	}
 	var B Bob
-	B.x = generateSessionKey(P - 1)
+	B.x = methods.LimitedGeneratePrime(P)
 	B.y = methods.ModularPow(g, B.x, P)
 
-	A.k = generateSessionKey(P)
+	A.k = methods.LimitedGeneratePrime(P)
 
 	A.a = methods.ModularPow(g, A.k, P)
 	yk := int64(math.Pow(float64(B.y), float64(A.k)))
