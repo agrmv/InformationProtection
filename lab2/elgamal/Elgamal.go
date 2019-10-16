@@ -21,10 +21,10 @@ type Bob struct {
 
 func main() {
 	var A Alice
-	A.message = 10 //strconv.ParseInt(os.Args[1], 10, 64)
+	A.message = 11 //strconv.ParseInt(os.Args[1], 10, 64)
 	var P, g int64
 	for true {
-		P, _, g = methods.GeneratePQg(20)
+		P, _, g = methods.GeneratePQg(29)
 		if P > A.message {
 			break
 		}

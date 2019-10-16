@@ -2,7 +2,6 @@ package methods
 
 import (
 	"math/rand"
-	rand2 "math/rand"
 )
 
 func generatePrimeDefault(generator func() int64) int64 {
@@ -16,7 +15,10 @@ func generatePrimeDefault(generator func() int64) int64 {
 
 func generatePrimeLimited(limit int64) int64 {
 	for {
-		prime := rand2.Int63n(limit)
+		prime := rand.Int63n(limit)
+		if prime == 1 {
+			continue
+		}
 		if TestFerma(prime, 20) {
 			return prime
 		}
@@ -24,7 +26,7 @@ func generatePrimeLimited(limit int64) int64 {
 }
 
 func DefaultGeneratePrime() int64 {
-	return generatePrimeDefault(rand2.Int63)
+	return generatePrimeDefault(rand.Int63)
 }
 
 func LimitedGeneratePrime(max int64) int64 {
