@@ -1,7 +1,7 @@
 package methods
 
 import (
-	"math/rand"
+	rand2 "math/rand"
 )
 
 func generatePrimeDefault(generator func() int64) int64 {
@@ -15,7 +15,7 @@ func generatePrimeDefault(generator func() int64) int64 {
 
 func generatePrimeLimited(limit int64) int64 {
 	for {
-		prime := rand.Int63n(limit)
+		prime := rand2.Int63n(limit)
 		if prime == 1 {
 			continue
 		}
@@ -26,7 +26,7 @@ func generatePrimeLimited(limit int64) int64 {
 }
 
 func DefaultGeneratePrime() int64 {
-	return generatePrimeDefault(rand.Int63)
+	return generatePrimeDefault(rand2.Int63)
 }
 
 func LimitedGeneratePrime(max int64) int64 {
@@ -46,7 +46,7 @@ func TestFerma(n int64, k int) bool {
 		return false
 	}
 	for i := 0; i < 5; i++ {
-		a := rand.Int63n(n-1) + 1
+		a := rand2.Int63n(n-1) + 1
 		if Gcd(a, n) != 1 || ModularPow(a, n-1, n) != 1 {
 			return false
 		}
