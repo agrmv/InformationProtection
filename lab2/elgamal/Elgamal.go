@@ -82,7 +82,7 @@ func main() {
 	A.message = 11
 
 	for true {
-		P, _, g = methods.GeneratePQg(20)
+		P, _, g = methods.GeneratePQg(29)
 		if P > A.message {
 			break
 		}
