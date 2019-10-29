@@ -1,6 +1,7 @@
 package main
 
 import (
+	"../../ciphers"
 	"../../methods"
 	"crypto"
 	"crypto/rand"
@@ -11,12 +12,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"log"
 )
 
 // loadPrivateKey loads an parses a PEM encoded private key file.
-func loadPublicKey() (Unsigner, error) {
-	publicKey, _ := methods.ReadFile("lab3/rsa/publicKey.pem")
-	return parsePublicKey(publicKey)
+func loadPublicKey(publicKey *rsa.PublicKey) (Unsigner, error) {
+	return parsePublicKey(ciphers.PublicKeyToBytes(publicKey))
 }
 
 // parsePublicKey parses a PEM encoded private key.
@@ -42,9 +43,8 @@ func parsePublicKey(pemBytes []byte) (Unsigner, error) {
 }
 
 // loadPrivateKey loads an parses a PEM encoded private key file.
-func loadPrivateKey() (Signer, error) {
-	privateKey, _ := methods.ReadFile("lab3/rsa/privateKey.pem")
-	return parsePrivateKey(privateKey)
+func loadPrivateKey(privateKey *rsa.PrivateKey) (Signer, error) {
+	return parsePrivateKey(ciphers.PrivateKeyToBytes(privateKey))
 }
 
 // parsePublicKey parses a PEM encoded private key.
@@ -129,35 +129,40 @@ func (r *rsaPublicKey) Unsign(message []byte, sig []byte) error {
 }
 
 func main() {
-	signer, err := loadPrivateKey()
+	fileToSign, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+	privateKey, publicKey := ciphers.GenerateKeyPair(fileSize)
+
+	signer, err := loadPrivateKey(privateKey)
 	if err != nil {
-		fmt.Errorf("signer is damaged: %v", err)
+		log.Fatal(err)
 	}
 
-	toSign, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+	//toSign, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
 	//toSign := methods.ReadFile("lab2/resourse")//"date: Thu, 05 Jan 2012 21:31:40 GMT"
 
-	signed, err := signer.Sign([]byte(toSign))
+	signed, err := signer.Sign(fileToSign)
 	if err != nil {
-		fmt.Errorf("could not sign request: %v", err)
+		log.Fatal(err)
 	}
+	//можно спрятать в функцию
 	sig := base64.StdEncoding.EncodeToString(signed)
 	fmt.Printf("Signature: %v\n", sig)
 
-	parser, perr := loadPublicKey()
+	parser, perr := loadPublicKey(publicKey)
 	if perr != nil {
-		fmt.Errorf("could not sign request: %v", err)
+		log.Fatal(err)
 	}
 
-	err = parser.Unsign([]byte(toSign), signed)
+	err = parser.Unsign(fileToSign, signed)
 	if err != nil {
-		fmt.Errorf("could not sign request: %v", err)
+		log.Fatal(err)
 	}
 
 	/*TODO: записывать в файл его подпись
 	 * Переписать rsa на crypto
 	 * Переписать генерацию ключей под pem
 	 * Навести порядок с файловой структурой, по сути сделать аналог crypro, с некоторыми самописными функциями
+	 * Возможно стоит юзать не sha256
 	 */
 	fmt.Printf("Unsign error: %v\n", err)
 }

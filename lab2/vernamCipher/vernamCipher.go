@@ -23,7 +23,7 @@ func Decrypt(message []byte, key string) []byte {
 	return out
 }
 
-func generatePrivateKey(n int) string {
+func generatePrivateKey(n int64) string {
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	b := make([]byte, n)
 	for i := range b {
@@ -46,8 +46,8 @@ func getKeyFromJson(path string) string {
 
 func main() {
 	{
-		file, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-		writeKeyToJson("lab2/vernamCipher/resources/privateKey.json", generatePrivateKey(10))
+		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+		writeKeyToJson("lab2/vernamCipher/resources/privateKey.json", generatePrivateKey(fileSize))
 		encoded := Encrypt(file, getKeyFromJson("lab2/vernamCipher/resources/privateKey.json"))
 		methods.WriteFile("lab2/vernamCipher/resources/encrypted.jpg", encoded)
 	}

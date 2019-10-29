@@ -2,103 +2,64 @@ package main
 
 import (
 	"../../methods"
-	"encoding/json"
-	"fmt"
+	"encoding/binary"
+	"github.com/DenisDyachkov/i_p_labs/basic"
+	dh "github.com/DenisDyachkov/i_p_labs/basic/diffie-hellman"
+	"github.com/DenisDyachkov/i_p_labs/crypt/el_gamal"
 	"io/ioutil"
-	"math"
+	"math/rand"
+	"os"
 )
 
-type Pair struct {
-	First  int64 `json:"First"`
-	Second int64 `json:"Second"`
+func encrypt(m byte, sessionKey int64, key *dh.Key) int64 {
+	params := key.Params
+	return (int64(m) * basic.FastPowByModule(key.PublicKey, sessionKey, params.P)) % params.P
 }
 
-type Keys struct {
-	PublicKey  Pair `json:"PublicKey"`
-	PrivateKey Pair `json:"PrivateKey"`
+func decrypt(r, e int64, key *dh.Key) int64 {
+	params := key.Params
+	power := params.P - 1 - key.PrivateKey
+	return (e * basic.FastPowByModule(r, power, params.P)) % params.P
 }
 
-type Alice struct {
-	message []int64
-	k       int64
-	a       int64
-	b       int64
+func SecretSessionKey(key *dh.Key) int64 {
+	return rand.Int63n(key.Params.P-1) + 1
 }
 
-type Bob struct {
-	decodedMessage []byte
-	x              int64
-	y              int64
-}
-
-func generateAliceKeys(alice *Alice, P int64, g int64) {
-	alice.k = methods.LimitedGeneratePrime(P)
-	alice.a = methods.ModularPow(g, alice.k, P)
-}
-
-func generateBobKeys(bob *Bob, P int64, g int64) {
-	bob.x = methods.LimitedGeneratePrime(P)
-	bob.y = methods.ModularPow(g, bob.x, P)
-}
-
-func encrypt(alice *Alice, bob *Bob, P int64, temp int64) int64 {
-	return (int64(math.Pow(float64(bob.y), float64(alice.k))) * temp) % P
-}
-
-func EncryptMessage(file []byte, fileSize int64, alice *Alice, bob *Bob, P int64) {
-	alice.message = make([]int64, fileSize)
-	for i, v := range file {
-		alice.message[i] = encrypt(alice, bob, P, int64(v))
+func EncryptMessage(message []byte, key *dh.Key) (addition []byte, encrypted []byte) {
+	bin := make([]byte, 8)
+	for _, m := range message {
+		k := SecretSessionKey(key)
+		a := basic.FastPowByModule(key.Params.G, k, key.Params.P)
+		b := encrypt(m, k, key)
+		binary.LittleEndian.PutUint64(bin, uint64(b))
+		encrypted = append(encrypted, bin...)
+		binary.LittleEndian.PutUint64(bin, uint64(a))
+		addition = append(addition, bin...)
 	}
+	return
 }
 
-func decrypt(alice *Alice, bob *Bob, P int64, temp int64) int64 {
-	return (temp * int64(math.Pow(float64(alice.a), float64(P-1-bob.x)))) % P
-}
-
-func DecryptMessage(alice *Alice, bob *Bob, P int64) {
-	bob.decodedMessage = make([]byte, len(alice.message))
-	for i, v := range alice.message {
-		bob.decodedMessage[i] = byte(decrypt(alice, bob, P, v))
+func DecryptMessage(r []byte, e []byte, key *dh.Key) []byte {
+	var decrypted []byte
+	for i := 0; i < len(e); i += 8 {
+		_r := binary.LittleEndian.Uint64(r[i : i+8])
+		_e := binary.LittleEndian.Uint64(e[i : i+8])
+		c := decrypt(int64(_r), int64(_e), key)
+		decrypted = append(decrypted, byte(c))
 	}
-}
-
-func writeKeyToJson(path string, keys Keys) {
-	marshalKeys, _ := json.Marshal(keys)
-	_ = ioutil.WriteFile(path, marshalKeys, 0644)
-}
-
-func getKeyFromJson(path string) Keys {
-	file, _ := ioutil.ReadFile(path)
-	keys := Keys{}
-	_ = json.Unmarshal(file, &keys)
-	return keys
+	return decrypted
 }
 
 func main() {
-	var A Alice
-	var B Bob
-	var P, g int64
-	/*A.message = 11
+	key := el_gamal.GenerateKey()
+	src, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
+	add, enc := el_gamal.EncryptMessage(src, key)
+	dec := el_gamal.DecryptMessage(add, enc, key)
+	el_gamal.SaveKeyToFile("key.el_gamal", key)
+	//_ = ioutil.WriteFile("lab2/resourcesGlobal/test.jpg", src, os.ModePerm)
+	_ = ioutil.WriteFile("lab2/elgamal/resources/elgamal-encrypted.jpg", enc, os.ModePerm)
+	_ = ioutil.WriteFile("lab2/elgamal/resources/elgamal-encrypted-add.jpg", add, os.ModePerm)
+	_ = ioutil.WriteFile("lab2/elgamal/resources/elgamal-decrypted.jpg", dec, os.ModePerm)
 
-	for true {
-		P, _, g = methods.GeneratePQg(29)
-		if P > A.message {
-			break
-		}
-	}*/
-
-	generateAliceKeys(&A, P, g)
-	generateBobKeys(&B, P, g)
-	{
-		writeKeyToJson("lab2/elgamal/resources/keys.json", Keys{Pair{A.a, A.k}, Pair{B.x, B.y}})
-		//encrypt(&A, &B, P)
-		//decrypt(&A, &B, P)
-		file, fileSize := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-		EncryptMessage(file, fileSize, &A, &B, P)
-		DecryptMessage(&A, &B, P)
-		//methods.WriteFile("lab2/elgamal/resources/decrypt.jpg", B.decodedMessage)
-	}
-
-	fmt.Printf("Message of Alice: %d\nDecoded message of Bob: %d\n", A.message, B.decodedMessage)
 }
