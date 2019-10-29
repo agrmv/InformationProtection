@@ -15,6 +15,14 @@ import (
 	"log"
 )
 
+type rsaPublicKey struct {
+	*rsa.PublicKey
+}
+
+type rsaPrivateKey struct {
+	*rsa.PrivateKey
+}
+
 // loadPrivateKey loads an parses a PEM encoded private key file.
 func loadPublicKey(publicKey *rsa.PublicKey) (Unsigner, error) {
 	return parsePublicKey(ciphers.PublicKeyToBytes(publicKey))
@@ -104,14 +112,6 @@ func newUnsignerFromKey(k interface{}) (Unsigner, error) {
 	return sshKey, nil
 }
 
-type rsaPublicKey struct {
-	*rsa.PublicKey
-}
-
-type rsaPrivateKey struct {
-	*rsa.PrivateKey
-}
-
 // Sign signs data with rsa-sha256
 func (r *rsaPrivateKey) Sign(data []byte) ([]byte, error) {
 	h := sha256.New()
@@ -137,9 +137,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//toSign, _ := methods.ReadFile("lab2/resourcesGlobal/test.jpg")
-	//toSign := methods.ReadFile("lab2/resourse")//"date: Thu, 05 Jan 2012 21:31:40 GMT"
-
 	signed, err := signer.Sign(fileToSign)
 	if err != nil {
 		log.Fatal(err)
@@ -158,11 +155,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	/*TODO: записывать в файл его подпись
-	 * Переписать rsa на crypto
-	 * Переписать генерацию ключей под pem
+	/*TODO:
+	 * Записывать в файл его подпись
+	 * Переписать rsa на crypto DONE
+	 * Переписать генерацию ключей под pem DONE
 	 * Навести порядок с файловой структурой, по сути сделать аналог crypro, с некоторыми самописными функциями
 	 * Возможно стоит юзать не sha256
+	 * Вынести структуры с интерфейсами в родительский пакет???
 	 */
 	fmt.Printf("Unsign error: %v\n", err)
 }
