@@ -9,14 +9,6 @@ import (
 	"log"
 )
 
-type RsaPublicKey struct {
-	*rsa.PublicKey
-}
-
-type RsaPrivateKey struct {
-	*rsa.PrivateKey
-}
-
 type Signer interface {
 	// Sign returns raw signature for the given data. This method
 	// will apply the hash specified for the keytype to the data.

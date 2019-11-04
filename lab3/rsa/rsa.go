@@ -37,7 +37,7 @@ func parsePublicKey(pemBytes []byte) (Unsigner, error) {
 
 	var rawkey interface{}
 	switch block.Type {
-	case "PUBLIC KEY":
+	case "RSA PUBLIC KEY":
 		rsa, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err != nil {
 			return nil, err
@@ -146,8 +146,8 @@ func main() {
 	//тут записывать в файл
 	fmt.Printf("Signature: %v\n", sig)
 
-	parser, perr := loadPublicKey(publicKey)
-	if perr != nil {
+	parser, err := loadPublicKey(publicKey)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -166,5 +166,5 @@ func main() {
 	 * elgamal по аналогии должно быть легко
 	 * c гостом разобраться че это такое и просто наебать
 	 */
-	//fmt.Printf("Unsign error: %v\n", err)
+	fmt.Printf("Unsign error: %v\n", err)
 }
