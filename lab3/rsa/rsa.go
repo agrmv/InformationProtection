@@ -6,7 +6,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
+	"crypto/sha1"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
@@ -37,7 +37,7 @@ func parsePublicKey(pemBytes []byte) (Unsigner, error) {
 
 	var rawkey interface{}
 	switch block.Type {
-	case "PUBLIC KEY":
+	case "RSA PUBLIC KEY":
 		rsa, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err != nil {
 			return nil, err
@@ -114,18 +114,18 @@ func newUnsignerFromKey(k interface{}) (Unsigner, error) {
 
 // Sign signs data with rsa-sha256
 func (r *rsaPrivateKey) Sign(data []byte) ([]byte, error) {
-	h := sha256.New()
+	h := sha1.New()
 	h.Write(data)
 	d := h.Sum(nil)
-	return rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, crypto.SHA256, d)
+	return rsa.SignPKCS1v15(rand.Reader, r.PrivateKey, crypto.SHA1, d)
 }
 
 // Unsign verifies the message using a rsa-sha256 signature
 func (r *rsaPublicKey) Unsign(message []byte, sig []byte) error {
-	h := sha256.New()
+	h := sha1.New()
 	h.Write(message)
 	d := h.Sum(nil)
-	return rsa.VerifyPKCS1v15(r.PublicKey, crypto.SHA256, d, sig)
+	return rsa.VerifyPKCS1v15(r.PublicKey, crypto.SHA1, d, sig)
 }
 
 func main() {
@@ -137,34 +137,28 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//Alice generate signature
 	signed, err := signer.Sign(fileToSign)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//можно спрятать в функцию
 	sig := base64.StdEncoding.EncodeToString(signed)
 	//тут записывать в файл
-	fmt.Printf("Signature: %v\n", sig)
+	//fmt.Printf("Signature: %v\n", sig)
+	methods.WriteFile("lab3/rsa/signature.pem", []byte(sig))
 
-	parser, perr := loadPublicKey(publicKey)
-	if perr != nil {
-		log.Fatal(err)
-	}
-
-	err = parser.Unsign(fileToSign, signed)
+	parser, err := loadPublicKey(publicKey)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	/*TODO:
-	 * Записывать в файл его подпись(на бд сделаю)
-	 * Переписать rsa на crypto DONE
-	 * Переписать генерацию ключей под pem DONE
-	 * Навести порядок с файловой структурой, по сути сделать аналог crypro, с некоторыми самописными функциями
-	 * Возможно стоит юзать не sha256
-	 * Вынести структуры с интерфейсами в родительский пакет???
-	 * elgamal по аналогии должно быть легко
-	 * c гостом разобраться че это такое и просто наебать
-	 */
+	//Bob check signature
+	err = parser.Unsign(fileToSign, signed)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Printf("Signature is true")
+	}
+
 	//fmt.Printf("Unsign error: %v\n", err)
 }
