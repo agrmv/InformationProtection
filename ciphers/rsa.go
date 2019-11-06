@@ -3,7 +3,7 @@ package ciphers
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha512"
+	"crypto/sha1"
 	"crypto/x509"
 	"encoding/pem"
 	"log"
@@ -103,7 +103,7 @@ func BytesToPublicKey(publicKey []byte) *rsa.PublicKey {
 
 // EncryptWithPublicKey encrypts data with public key
 func EncryptWithPublicKey(message []byte, publicKey *rsa.PublicKey) []byte {
-	hash := sha512.New()
+	hash := sha1.New()
 	cipherMessage, err := rsa.EncryptOAEP(hash, rand.Reader, publicKey, message, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -113,7 +113,7 @@ func EncryptWithPublicKey(message []byte, publicKey *rsa.PublicKey) []byte {
 
 // DecryptWithPrivateKey decrypts data with private key
 func DecryptWithPrivateKey(message []byte, privateKey *rsa.PrivateKey) []byte {
-	hash := sha512.New()
+	hash := sha1.New()
 	plaintext, err := rsa.DecryptOAEP(hash, rand.Reader, privateKey, message, nil)
 	if err != nil {
 		log.Fatal(err)

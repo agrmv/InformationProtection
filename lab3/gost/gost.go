@@ -1,10 +1,11 @@
-package gost
+package main
 
 import (
 	"../../methods"
 	"crypto/sha1"
 	"fmt"
 	"math"
+	"math/big"
 	"math/rand"
 )
 
@@ -42,6 +43,7 @@ func generateA(p int64) int64 {
 }
 
 func main() {
+	//init public keys
 	p, q := generatePQ() // common params
 	a := generateA(p)    // common param
 
@@ -61,6 +63,8 @@ func main() {
 	sha1_hash := hash.Sum(nil)
 	fmt.Println(sha1_hash[0])
 
+	//generate signature
+	//TODO move in func
 	var r, s int64
 	for {
 		k := rand.Int63n(q)
@@ -87,13 +91,20 @@ func main() {
 	}
 	_, antiH, _ := methods.GcdExtended(int64(sha1_hash2[0]), q)
 	fmt.Println((int64(sha1_hash2[0]) * antiH) % q)
-	u1 := s * antiH
-	u2 := (-r * antiH) % q
+	//u1 := s * antiH
+	//u2 := (-r * antiH) % q
 
-	v := (methods.Power(a, u1) * methods.Power(Bob.publicKey, u2)) % p % q
+	//v := (methods.Power(a, u1) * methods.Power(Bob.publicKey, u2)) % p % q
+	//v1 := new(big.Int).Exp(big.NewInt(a), big.NewInt(u1), nil)
 
-	fmt.Println(v == r)
+	u1 := new(big.Int).Mod(new(big.Int).Mul(big.NewInt(s), big.NewInt(antiH)), big.NewInt(q))
+	u2 := new(big.Int).Mod(new(big.Int).Mul(new(big.Int).Neg(big.NewInt(r)), big.NewInt(antiH)), big.NewInt(q))
+	au1 := new(big.Int).Exp(big.NewInt(a), u1, big.NewInt(p))
+	yu2 := new(big.Int).Exp(big.NewInt(Alice.publicKey), u2, big.NewInt(p))
+	v := new(big.Int).Mod(new(big.Int).Mod(new(big.Int).Mul(au1, yu2), big.NewInt(p)), big.NewInt(q))
+	//must be true
+	fmt.Println(r)
+	fmt.Println(v)
 
 	/* DECODE END */
-
 }

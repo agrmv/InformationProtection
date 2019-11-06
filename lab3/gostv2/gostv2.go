@@ -105,49 +105,6 @@ func CheckSignatureGost(r, s *big.Int, m string, d ExchangeData) bool {
 	return v.Cmp(r) != 0
 }
 
-func SignatureGostTEST(d PublicKeys, x *big.Int) (r, s *big.Int) {
-	var k, h *big.Int
-	h = big.NewInt(4)
-	for {
-		k, _ = rand.Int(rand.Reader, d.Q)
-		r = new(big.Int).Exp(d.A, k, d.P)
-		r.Mod(r, d.Q)
-		if r.Cmp(big.NewInt(0)) == 0 {
-			continue
-		}
-
-		kh := new(big.Int).Mul(k, h)
-		xr := new(big.Int).Mul(x, r)
-		s = new(big.Int).Add(kh, xr)
-		s.Mod(s, d.Q)
-		if s.Cmp(big.NewInt(0)) == 0 {
-			continue
-		}
-		if d.Q.Cmp(r) != 1 && d.Q.Cmp(s) != 1 {
-			continue
-		}
-		return r, s
-	}
-}
-
-func ChecSignatureGostTEST(r, s *big.Int, d ExchangeData) bool {
-	h := big.NewInt(4)
-	invers_h := new(big.Int).ModInverse(h, d.Data.Q) //??????????
-	println(invers_h.Text(10))
-
-	sh := new(big.Int).Mul(s, invers_h)
-	rh := new(big.Int).Mul(r, invers_h)
-	rh.Neg(rh)
-	u1 := new(big.Int).Mod(sh, d.Data.Q)
-	u2 := new(big.Int).Mod(rh, d.Data.Q)
-	au1 := new(big.Int).Exp(d.Data.A, u1, d.Data.P)
-	yu2 := new(big.Int).Exp(d.Y, u2, d.Data.P)
-	v := new(big.Int).Mul(au1, yu2)
-	v.Mod(v, d.Data.P)
-	v.Mod(v, d.Data.Q)
-	return v.Cmp(r) == 0
-}
-
 func main() {
 
 	/*	//for {
