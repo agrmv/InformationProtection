@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// PublicKey represents an ElGamal public key.
+// Y represents an ElGamal public key.
 type PublicKey struct {
 	G, P, Y *big.Int
 }
