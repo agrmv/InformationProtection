@@ -34,3 +34,7 @@ func BabyGiantStep(a int64, y int64, p int64) int64 { // a^x = b % p
 	}
 	return -1
 }
+
+func Power(x int64, y int64) int64 {
+	return int64(math.Pow(float64(x), float64(y)))
+}

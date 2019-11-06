@@ -13,7 +13,7 @@ type Pair struct {
 }
 
 type Keys struct {
-	PublicKey  Pair `json:"PublicKey"`
+	PublicKey  Pair `json:"Y"`
 	PrivateKey Pair `json:"PrivateKey"`
 }
 
