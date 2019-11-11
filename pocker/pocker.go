@@ -105,11 +105,12 @@ func main() {
 	otherCards := deleteCardFromDeck(encodeCards, B) // now Bob work with other cards
 	//fmt.Println(otherCards)
 
-	v1 := methods.ModularPow(otherCards[0], cb, P) // Bob generate numbers(decode decoding deck?) and send that to Alice
-	v2 := methods.ModularPow(otherCards[1], cb, P)
+	V := encodeDeck(otherCards, cb, P)
+	//v1 := methods.ModularPow(otherCards[0], cb, P) // Bob generate numbers(decode decoding deck?) and send that to Alice
+	//v2 := methods.ModularPow(otherCards[1], cb, P)
 	//fmt.Printf("v1, v2: %d, %d\n", v1, v2)
 
-	A := chooseRandomCard2(v1, v2) // Alice choose one of them
+	A := chooseRandomCard(V) // Alice choose one of them
 	//fmt.Printf("A: %d\n", A)
 
 	w1 := methods.ModularPow(A, da, P) // Alice decode chosen card and send that to Bob
