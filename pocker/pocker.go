@@ -6,6 +6,14 @@ import (
 	"math/rand"
 )
 
+type Player struct {
+	P           int64
+	C           int64
+	D           int64
+	cartEncrypt []int64
+	cartDecrypt []int64
+}
+
 func GenerateKeys(P int64) (int64, int64) {
 	var c, d int64
 	for {
@@ -19,26 +27,6 @@ func GenerateKeys(P int64) (int64, int64) {
 	return c, d
 }
 
-//func chooseRandomCard(a, b, c int64) int64 {
-//	if rand.Int63n(10) % 3 == 0 {
-//		return a
-//	} else if rand.Int63n(10) % 3 == 1 {
-//		return b
-//	}
-//	return c
-//}
-
-func chooseRandomCard(a []int64) int64 {
-	return a[rand.Intn(len(a))]
-}
-
-func chooseRandomCard2(a, b int64) int64 {
-	if rand.Int63n(10) == 0 {
-		return a
-	}
-	return b
-}
-
 func find(slice []int64, element int64) bool {
 	for _, item := range slice {
 		if item == element {
@@ -50,7 +38,7 @@ func find(slice []int64, element int64) bool {
 
 func generateCards(P int64) []int64 {
 	var r int64
-	cards := make([]int64, 3)
+	cards := make([]int64, 6)
 	for i, _ := range cards {
 		for {
 			r = rand.Int63n(P - 1)
@@ -63,58 +51,63 @@ func generateCards(P int64) []int64 {
 	return cards
 }
 
-func deleteCardFromDeck(deck []int64, card int64) []int64 {
-	otherCards := make([]int64, 0)
-	for index, _ := range deck {
-		if deck[index] == card {
-			continue
-		}
-		otherCards = append(otherCards, deck[index])
-	}
-	return otherCards
+func initPlayer(p int64) Player {
+	c, d := GenerateKeys(p)
+	return Player{P: p, C: c, D: d}
 }
 
-func encodeDeck(deck []int64, c, P int64) []int64 {
+func initPlayers(p, n int64) []Player {
+	var players []Player
+	for i := int64(0); i < n; i++ {
+		player := initPlayer(p)
+		players = append(players, player)
+		fmt.Println("player N", i, ": ", player)
+	}
+	return players
+}
+
+func (p *Player) encryptDeck(deck []int64) []int64 {
 	encodeDeck := make([]int64, len(deck))
 	for i, item := range deck {
-		encodeDeck[i] = methods.ModularPow(item, c, P)
+		encodeDeck[i] = methods.ModularPow(item, p.C, p.P)
 	}
 	return encodeDeck
+}
+
+func encryptAllDeck(players []Player, encrypt []int64) []int64 {
+	for _, player := range players {
+		encrypt = player.encryptDeck(encrypt)
+	}
+	return encrypt
+}
+
+func distributeCards(players *[]Player, deck *[]int64) {
+	//2 - число карт на игрока
+	for i := 0; i < 2; i++ {
+		for j, _ := range *players {
+			if len(*deck)-1 < 0 {
+				fmt.Println()
+				break
+			}
+			(&(*players)[j]).cartEncrypt = append((&(*players)[j]).cartEncrypt, (*deck)[len(*deck)-1])
+			*deck = (*deck)[:len(*deck)-1]
+		}
+	}
 }
 
 func main() {
 	P, _, _ := methods.GeneratePQg(53)
 
-	ca, da := GenerateKeys(P) // keys of Alice
-	cb, db := GenerateKeys(P) // keys of Bob
+	//TODO FIX RANDOM
+	arr := generateCards(P)
+	fmt.Println("deck:", arr)
 
-	cards := generateCards(P) // our deck
-	fmt.Print("cards: ")
-	fmt.Print(cards)
-	fmt.Print("\n")
+	players := initPlayers(P, 3)
+	encryptDeck := encryptAllDeck(players, arr)
+	fmt.Println("encrypt deck:", encryptDeck)
+	distributeCards(&players, &encryptDeck)
+	fmt.Println("players", players)
 
-	encodeCards := encodeDeck(cards, ca, P) // Alice encode the deck and send it to the Bob
-	//fmt.Printf("u1, u2, u3: %d, %d, %d\n", encodeCards[0], encodeCards[1], encodeCards[2])
-
-	B := chooseRandomCard(encodeCards) // Bob choose one card from deck and send it back to Alice
-	//fmt.Printf("B: %d\n", B)
-
-	Bdecode := methods.ModularPow(B, da, P) // Alice decode her card
-	fmt.Printf("Alice's card: %d\n", Bdecode)
-
-	otherCards := deleteCardFromDeck(encodeCards, B) // now Bob work with other cards
-	//fmt.Println(otherCards)
-
-	V := encodeDeck(otherCards, cb, P)
-	//v1 := methods.ModularPow(otherCards[0], cb, P) // Bob generate numbers(decode decoding deck?) and send that to Alice
-	//v2 := methods.ModularPow(otherCards[1], cb, P)
-	//fmt.Printf("v1, v2: %d, %d\n", v1, v2)
-
-	A := chooseRandomCard(V) // Alice choose one of them
-	//fmt.Printf("A: %d\n", A)
-
-	w1 := methods.ModularPow(A, da, P) // Alice decode chosen card and send that to Bob
-
-	z := methods.ModularPow(w1, db, P) // Bob decode the card
-	fmt.Printf("Bob's card: %d\n", z)
+	//TODO DECRYPT
+	//TODO change num to pic/text
 }
