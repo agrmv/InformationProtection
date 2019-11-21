@@ -4,22 +4,93 @@ import (
 	"../methods"
 	"fmt"
 	"math/rand"
+	"strconv"
+	"time"
 )
+
+//const (
+//	piki_2 = iota + 1
+//	piki_3
+//	piki_4
+//	piki_5
+//	piki_6
+//	piki_7
+//	piki_8
+//	piki_9
+//	piki_10
+//	piki_v
+//	piki_d
+//	piki_k
+//	piki_t
+//
+//	kresti_2
+//	kresti_3
+//	kresti_4
+//	kresti_5
+//	kresti_6
+//	kresti_7
+//	kresti_8
+//	kresti_9
+//	kresti_10
+//	kresti_v
+//	kresti_d
+//	kresti_k
+//	kresti_t
+//
+//	bubi_2
+//	bubi_3
+//	bubi_4
+//	bubi_5
+//	bubi_6
+//	bubi_7
+//	bubi_8
+//	bubi_9
+//	bubi_10
+//	bubi_v
+//	bubi_d
+//	bubi_k
+//	bubi_t
+//
+//)
+
+var suit = []string{"♣", "♠", "♥", "♦"}
+var high = []string{"J", "Q", "K", "A"}
+
+func InitDeck(poker bool) (cart_deck []string) {
+	var intiNum int
+	if poker {
+		intiNum = 2
+	} else {
+		intiNum = 6
+	}
+
+	for _, v := range suit {
+		for i := intiNum; i <= 10; i++ {
+			cart := strconv.FormatInt(int64(i), 10) + v
+			cart_deck = append(cart_deck, cart)
+		}
+		for _, h := range high {
+			cart := h + v
+			cart_deck = append(cart_deck, cart)
+		}
+	}
+	return
+}
 
 type Player struct {
 	P           int64
 	C           int64
 	D           int64
 	cardEncrypt []int64
-	cardDecrypt []int64
+	CardDecrypt []int64
 }
 
 func GenerateKeys(P int64) (int64, int64) {
 	var c, d int64
 	for {
-		c = methods.LimitedGeneratePrime(53)
+		c = methods.LimitedGeneratePrime(P)
 		_, d, _ = methods.GcdExtended(c, P-1)
-		if d > 0 {
+		if d > 2 {
 			break
 		}
 	}
@@ -37,18 +108,16 @@ func find(slice []int64, element int64) bool {
 }
 
 func generateCards(P int64) []int64 {
-	var r int64
-	cards := make([]int64, 6)
-	for i, _ := range cards {
-		for {
-			r = rand.Int63n(P - 1)
-			if r >= 2 && !find(cards, r) {
-				break
-			}
-		}
-		cards[i] = r
+	cardsAll := make([]int64, 46)
+	for i, _ := range cardsAll {
+		cardsAll[i] = int64(i + 1)
 	}
-	return cards
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	r.Shuffle(len(cardsAll), func(i, j int) {
+
+		cardsAll[i], cardsAll[j] = cardsAll[j], cardsAll[i]
+	})
+	return cardsAll
 }
 
 func initPlayer(p int64) Player {
@@ -57,6 +126,9 @@ func initPlayer(p int64) Player {
 }
 
 func initPlayers(p, n int64) []Player {
+	if n > 23 {
+		panic("wrong num of players")
+	}
 	var players []Player
 	for i := int64(0); i < n; i++ {
 		player := initPlayer(p)
@@ -118,25 +190,41 @@ func distributeDecryptedCards(players *[]Player, deck *[]int64) {
 				fmt.Println()
 				break
 			}
-			(&(*players)[j]).cardDecrypt = append((&(*players)[j]).cardDecrypt, (*deck)[len(*deck)-1])
+			(&(*players)[j]).CardDecrypt = append((&(*players)[j]).CardDecrypt, (*deck)[len(*deck)-1])
+			//fmt.Println(changeNumToString((&(*players)[j]).cardDecrypt))
 			*deck = (*deck)[:len(*deck)-1]
 		}
 	}
 }
 
+func changeNumToString(arr []int64) []string {
+	str := make([]string, len(arr))
+	cards := InitDeck(true)
+	for i, j := range arr {
+		str[i] = cards[j-1]
+	}
+	return str
+}
+
 func main() {
-	P, _, _ := methods.GeneratePQg(53)
+	var P int64
+	for {
+		P, _, _ = methods.GeneratePQg(500)
+		if P > 53 {
+			break
+		}
+	}
 
 	//TODO FIX RANDOM
 	arr := generateCards(P)
-	fmt.Println("deck:", arr)
+	fmt.Println("deck:", changeNumToString(arr))
 
-	players := initPlayers(P, 3)
+	players := initPlayers(P, 23)
 	encryptDeck := encryptAllDeck(players, arr)
 	fmt.Println("encrypt deck:", encryptDeck)
 
 	decryptDeck := decryptAllDeck(players, encryptDeck)
-	fmt.Println("decrypt deck:", decryptDeck)
+	fmt.Println("decrypt deck:", changeNumToString(decryptDeck))
 
 	distributeCards(&players, &encryptDeck)
 	fmt.Println("players with encrypted", players)
@@ -145,6 +233,10 @@ func main() {
 	distributeDecryptedCards(&players, &decryptDeck)
 	fmt.Println("players with decrypted", players)
 
-	//TODO DECRYPT
 	//TODO change num to pic/text
+
+	for _, item := range players {
+		fmt.Println(changeNumToString(item.CardDecrypt))
+	}
+
 }
