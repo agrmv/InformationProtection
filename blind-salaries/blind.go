@@ -53,35 +53,35 @@ func FinalMessage(salary, sig []byte) string {
 }
 
 type BlindedMessage struct {
-	Blinded []byte
-	Sig		[]byte
-	PublicKey	rsa.PublicKey
+	Blinded   []byte
+	Sig       []byte
+	PublicKey rsa.PublicKey
 }
 
 /*********************
-	   Employee
+	   Voter
 **********************/
-type Employee struct {
-	key        *rsa.PrivateKey
-	signerskey *rsa.PublicKey
-	message    []byte
-	unblinder  []byte
-	PublicKey *rsa.PublicKey
+type Voter struct {
+	key         *rsa.PrivateKey
+	signerskey  *rsa.PublicKey
+	message     []byte
+	unblinder   []byte
+	PublicKey   *rsa.PublicKey
 	has_blinded bool
 }
 
-func NewEmployee(signerskey *rsa.PublicKey) (*Employee, error) {
+func NewVoter(signerskey *rsa.PublicKey) (*Voter, error) {
 	key, err := rsa.GenerateKey(rand.Reader, Keysize)
 	if err != nil {
-		return nil, errors.New("Error creating Employee RSA key")
+		return nil, errors.New("Error creating Voter RSA key")
 	}
-	return &Employee{key, signerskey, nil, nil, &key.PublicKey, false}, nil
+	return &Voter{key, signerskey, nil, nil, &key.PublicKey, false}, nil
 }
 
 // employee salary blinding function
-func (e *Employee) BlindSalary(message []byte) (*BlindedMessage, error) {
+func (e *Voter) BlindSalary(message []byte) (*BlindedMessage, error) {
 	if e.has_blinded {
-		return nil, errors.New("Employee already blinded a message")
+		return nil, errors.New("Voter already blinded a message")
 	} else {
 		e.has_blinded = true
 	}
@@ -106,7 +106,7 @@ func (e *Employee) BlindSalary(message []byte) (*BlindedMessage, error) {
 }
 
 // employee unblinds and checks sig
-func (e *Employee) Unblind(blindSig []byte) ([]byte, error) {
+func (e *Voter) Unblind(blindSig []byte) ([]byte, error) {
 	// Unblind the signature
 	unBlindedSig := rsablind.Unblind(e.signerskey, blindSig, e.unblinder)
 
@@ -118,7 +118,7 @@ func (e *Employee) Unblind(blindSig []byte) ([]byte, error) {
 	return unBlindedSig, nil
 }
 
-func (e *Employee) VerifySallary(message, sig []byte, signerspubkey *rsa.PublicKey) error {
+func (e *Voter) VerifySallary(message, sig []byte, signerspubkey *rsa.PublicKey) error {
 	return VerifySallary(message, sig, e.signerskey)
 }
 
@@ -139,7 +139,7 @@ func NewSigner() (*Signer, error) {
 	return &Signer{key, nil, &key.PublicKey}, nil
 }
 
-func (s *Signer) AddEmployees(pubkeys []rsa.PublicKey) {
+func (s *Signer) AddVoter(pubkeys []rsa.PublicKey) {
 	s.employees = make(map[rsa.PublicKey]bool, len(pubkeys))
 
 	for _, pk := range pubkeys {
@@ -162,44 +162,43 @@ func (s *Signer) SignSalary(message *BlindedMessage) (sig []byte, err error) {
 func (s *Signer) authSignature(message *BlindedMessage) error {
 	val, ok := s.employees[message.PublicKey]
 	if !ok {
-		return errors.New("Employee not registered")
+		return errors.New("Voter not registered")
 	}
 	if val {
-		return errors.New("Employee already sent message")
+		return errors.New("Voter already sent message")
 	}
 	return VerifyPSS(message.Blinded, message.Sig, &message.PublicKey)
 }
 
 func main() {
-	// Set up the signer.
+	// Установить подписавшего.
 	signer, _ := NewSigner()
 
-	// Set up the employees.
-	alice, _ := NewEmployee(signer.PublicKey)
-	bob, _   := NewEmployee(signer.PublicKey)
+	// Инициализция избирателей.
+	alice, _ := NewVoter(signer.PublicKey)
+	bob, _ := NewVoter(signer.PublicKey)
 
-	// Add employees to signer.
-	signer.AddEmployees([]rsa.PublicKey{*alice.PublicKey,
-		*bob.PublicKey})
+	// Подписать избирателей.
+	signer.AddVoter([]rsa.PublicKey{*alice.PublicKey, *bob.PublicKey})
 
-	// Alice and Bob write down their salaries.
-	aliceSal := []byte("Below the glass ceiling")
-	bobSal   := []byte("A living wage")
+	// Алиса и Боб записывают свой голос
+	aliceSal := []byte("ZA")
+	bobSal := []byte("PROTIV")
 
-	// They blind their salaries and sign them.
-	aliceBlindMsg, _	:= alice.BlindSalary(aliceSal)
-	bobBlindMsg, _		:= bob.BlindSalary(bobSal)
+	// Они "ослепляют" свои голоса и подписывают их
+	aliceBlindMsg, _ := alice.BlindSalary(aliceSal)
+	bobBlindMsg, _ := bob.BlindSalary(bobSal)
 
-	// The signer verifies each message is authorized, and signs it.
-	// The message is encrypted (blinded). The signer cannot read it.
-	aliceBlindSig, _	:= signer.SignSalary(aliceBlindMsg)
-	bobBlindSig, _		:= signer.SignSalary(bobBlindMsg)
+	// Подписывающая сторона проверяет, что каждое сообщение авторизовано, и подписывает его.
+	// Сообщение зашифровано (ослеплено). Подписывающий не может прочитать это.
+	aliceBlindSig, _ := signer.SignSalary(aliceBlindMsg)
+	bobBlindSig, _ := signer.SignSalary(bobBlindMsg)
 
-	// Alice and Bob unblind their signature.
-	aliceSig, _	:= alice.Unblind(aliceBlindSig)
-	bobSig, _   := bob.Unblind(bobBlindSig)
+	// Алиса и Боб снимают с себя подпись.
+	aliceSig, _ := alice.Unblind(aliceBlindSig)
+	bobSig, _ := bob.Unblind(bobBlindSig)
 
-	// They post thier salaries and signatures anonymously somewhere.
+	// Они размещают свои голоса и подписи где-то анонимно.
 	fmt.Println(FinalMessage(aliceSal, aliceSig))
 	fmt.Println(FinalMessage(bobSal, bobSig))
 }
